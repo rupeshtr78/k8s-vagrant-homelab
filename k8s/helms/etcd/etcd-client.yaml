@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  etcd-client
+  namespace: external-dns
+  labels:
+    app:  etcd-client
+spec:
+  selector:
+    matchLabels:
+      app: etcd-client
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app:  etcd-client
+    spec:
+      # initContainers:
+        # Init containers are exactly like regular containers, except:
+          # - Init containers always run to completion.
+          # - Each init container must complete successfully before the next one starts.
+      containers:
+      - name:  etcd-client
+        image:  docker.io/bitnami/etcd:3.5.4-debian-11-r9
+        command: ["sh", "-c"]
+        args: ["sleep infinity"]
+        resources:
+          limits:
+            cpu: 100m
+            memory: 100Mi
+          requests:
+            cpu: 100m
+            memory: 100Mi
+        # livenessProbe:
+        #   tcpSocket:
+        #     port: 8080
+        #   initialDelaySeconds: 5
+        #   timeoutSeconds: 5
+        #   successThreshold: 1
+        #   failureThreshold: 3
+        #   periodSeconds: 10
+        # ports:
+        # - containerPort:  5000
+        # readinessProbe:
+        #   tcpSocket:
+        #     port: 5000
+        #   initialDelaySeconds: 10
+        #   periodSeconds: 10
+        env:
+        - name: ETCDCTL_ENDPOINTS
+          value: "etcd-release.externa-dns.svc.cluster.local:2379"        
+        - name: ETCD_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: etcd-release
+              key: etcd-root-password
+        - name: ROOT_PASSWORD
+          value: $(ETCD_ROOT_PASSWORD)
+
+      restartPolicy: Always

@@ -1,0 +1,8 @@
+apiVersion: "rupesh.example.com/v1"
+kind: Router
+metadata:
+  name: example-router
+spec:
+  dataCenter: eu-1
+  rack: 3B
+  servers: 100

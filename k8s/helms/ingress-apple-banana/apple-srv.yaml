@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: apple-service
+spec:
+  selector:
+    app: apple
+  ports:
+    - port: 5678
+      targetPort: 5678
+  type: ClusterIP
+
+---
+# dnsutils 
+# nslookup apple-service.playground

@@ -1,0 +1,15 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: apple-lb
+spec:
+  selector:
+    app: apple
+  ports:
+    - port: 5678
+      targetPort: 5678
+  type: LoadBalancer
+
+---
+# curl -m 5 http://192.168.1.4:5678
+# http://192.168.1.4:5678

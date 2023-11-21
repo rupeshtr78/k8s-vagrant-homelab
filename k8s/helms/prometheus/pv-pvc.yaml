@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: pv-nfs-data
+  namespace: prometheus
+  labels:
+    type: nfs
+    app: prometheus-deployment
+spec:
+  storageClassName: hyper-nfs
+  capacity:
+    storage: 1Gi
+  accessModes:
+    - ReadWriteMany
+  # nfs:
+  #   server: 192.168.2.130
+  #   path: "/srv/pvdata"
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: pvc-nfs-data
+  namespace: prometheus
+  labels:
+    app: prometheus-deployment
+spec:
+  storageClassName: k8s-nfs-class
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 500Mi

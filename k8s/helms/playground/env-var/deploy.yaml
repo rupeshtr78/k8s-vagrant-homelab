@@ -1,0 +1,27 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mans-not-hot
+  labels:
+    app: mans-not-hot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mans-not-hot
+  template:
+    metadata:
+      labels:
+        app: mans-not-hot
+    spec:
+      containers:
+        - name: app
+          image: nginx
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          envFrom:
+          - configMapRef:
+              name: env-configmap
+          - secretRef:
+              name: env-secrets

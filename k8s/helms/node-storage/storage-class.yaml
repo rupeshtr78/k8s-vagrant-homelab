@@ -1,0 +1,16 @@
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: k8s-local-storage
+provisioner: kubernetes.io/no-provisioner
+volumeBindingMode: WaitForFirstConsumer
+
+
+# DIRNAME="pvs-vol1"
+# sudo mkdir -p /mnt/disk/$DIRNAME 
+# sudo su -
+# sudo chcon -Rt svirt_sandbox_file_t /mnt/disk/$DIRNAME
+# sudo chmod 777 /mnt/disk/$DIRNAME
+
+# chcon -h system_u:object_r:svirt_sandbox_file_t /mnt/disk/$DIRNAME
+# chcon -R -h system_u:object_r:svirt_sandbox_file_t /mnt/disk/$DIRNAME

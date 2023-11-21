@@ -1,0 +1,21 @@
+apiVersion: kubeapps.com/v1alpha1
+kind: AppRepository
+metadata:
+  annotations:
+    meta.helm.sh/release-name: kubeapps
+    meta.helm.sh/release-namespace: kubeapps
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: kubeapps
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubeapps
+    helm.sh/chart: kubeapps-10.3.1
+  name: hashicorp
+  namespace: kubeapps
+spec:
+  syncJobPodTemplate:
+    spec:
+      securityContext:
+        runAsUser: 1001
+  type: helm
+  url: https://helm.releases.hashicorp.com
