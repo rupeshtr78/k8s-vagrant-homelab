@@ -1,0 +1,17 @@
+apiVersion: cilium.io/v2alpha1
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: cilium-nginx-ingress
+spec:
+  cidrs:
+    - cidr: "192.168.2.50/25"
+      disabled: false
+  serviceSelector:
+    matchLabels:
+      app.kubernetes.io/name: ingress-nginx
+
+
+
+# CiliumLoadBalancerIPPool in version "v2alpha1" cannot be handled as a CiliumLoadBalancerIPPool: strict decoding error: unknown field "spec.cidrs[0].cidr.end", unknown field "spec.cidrs[0].cidr.start"
+
+

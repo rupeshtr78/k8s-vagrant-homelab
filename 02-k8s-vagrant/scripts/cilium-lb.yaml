@@ -1,0 +1,78 @@
+apiVersion: "cilium.io/v2alpha1"
+kind: CiliumLoadBalancerIPPool
+metadata:
+  name: "cilium-lb-pool"
+spec:
+  cidrs:
+    - cidr: "192.168.2.64/28"
+  disabled: false
+
+---
+# apiVersion: "cilium.io/v2alpha1"
+# kind: CiliumBGPPeeringPolicy
+# metadata:
+#  name: bgp-peering-policy
+# spec: # CiliumBGPPeeringPolicySpec
+#  nodeSelector:
+#    matchLabels:
+#      bgp-peering: "true"
+#  virtualRouters: # []CiliumBGPVirtualRouter
+#  - localASN: 65001 #Neighbor ASN
+#    exportPodCIDR: true
+#    neighbors: # []CiliumBGPNeighbor
+#     - peerAddress: '192.168.2.1/32' #Router ip
+#       peerASN: 65000 #Router ASN
+#       eBGPMultihopTTL: 10
+#       connectRetryTimeSeconds: 120
+#       holdTimeSeconds: 90
+#       keepAliveTimeSeconds: 30
+#       gracefulRestart:
+#         enabled: true
+#         restartTimeSeconds: 120
+#    serviceSelector: # []CiliumBGPPeerServiceSelector
+#       matchLabels:
+#         app.kubernetes.io/name: ingress-nginx
+
+---
+# apiVersion: "cilium.io/v2alpha1"
+# kind: CiliumL2AnnouncementPolicy
+# metadata:
+#   name: cilium-l2-announcement-policy
+# spec:
+#   externalIPs: true
+#   loadBalancerIPs: true
+
+
+---
+# apiVersion: cilium.io/v2
+# kind: CiliumClusterwideNetworkPolicy
+# metadata:
+#   name: global-allow-example
+# spec:
+#   endpointSelector: {}
+#   ingress:
+#   - fromEndpoints:
+#     - matchLabels: {}
+#   egress:
+#   - toEndpoints:
+#     - matchLabels: {}
+
+
+
+
+
+
+# apiVersion: "cilium.io/v2alpha1"
+# kind: CiliumLoadBalancerIPPool
+# metadata:
+#   name: "cilium-pool"
+# spec:
+#   cidrs:
+#     - cidr: "192.168.2.48/29"  # covers .48-.55
+#     - cidr: "192.168.2.56/30"  # covers .56-.59
+#     - cidr: "192.168.2.60/31"  # covers .60-.61
+#     - cidr: "192.168.2.62/32"  # covers .62 only
+#     - cidr: "192.168.2.63/32"  # covers .63 only
+#     - cidr: "192.168.2.64/28"  # covers .64-.79
+#     - cidr: "192.168.2.64/27"  # covers .64-.95
+

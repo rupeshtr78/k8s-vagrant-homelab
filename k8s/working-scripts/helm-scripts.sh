@@ -12,18 +12,19 @@ sudo systemctl restart nfs-kernel-server
 
 # https://adamtheautomator.com/ubuntu-nfs-server/
 
-
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner 
 helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
 --set nfs.server=192.168.2.130 \
 --set nfs.path=/srv/pvdata \
 --set storageClass.name=k8s-nfs-class \
 --set storageClass.provisionerName=k8s-sigs.io/nfs-subdir-external-provisioner
 
-
+helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner 
 helm upgrade --install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner --set nfs.server=192.168.2.130 --set nfs.path=/srv/pvdata --set storageClass.name=k8s-nfs-class --set storageClass.provisionerName=k8s-sigs.io/nfs-subdir-external-provisioner
 
 
 # --namespace prometheus --create-namespace \
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
 helm upgrade --install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
 
 helm uninstall ingress-nginx -n ingress-nginx
@@ -31,7 +32,12 @@ helm uninstall ingress-nginx -n ingress-nginx
 kubectl expose deployment apple -n playground --type=NodePort --port=5678 --target-port=5678 --
 kubectl expose deployment apple -n playground --type=LoadBalancer --port=2368
 
-helm install --namespace metallb --create-namespace metallb metallb/metallb
+helm repo add metallb https://metallb.github.io/metallb
+helm install metallb metallb/metallb --namespace metallb --create-namespace \
+  --set configInline.address-pools[0].name=default \
+  --set configInline.address-pools[0].protocol=layer2 \
+  --set configInline.address-pools[0].addresses[0]=192.168.2.50-192.168.2.100
+
 
 helm uninstall metallb -n metallb
 
@@ -42,18 +48,20 @@ address-pools:
   addresses:
   - 192.168.2.175-192.168.1.8
 
-helm upgrade --install prometheus prometheus/prometheus  \
-    --namespace prometheus  \
-    --create-namespace  \
-    --set-file agent.licenseFile=./license.txt   \
-    -f pepper-eks-22.yaml  
-
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm install prometheus prometheus-community/prometheus \
+--namespace prometheus \
+--create-namespace \
+--set persistentVolume.enabled=true \
+--set persistentVolume.storageClass="k8s-nfs-class" \
+--set persistentVolume.size=2Gi
 
 helm install prometheus prometheus-community/prometheus \
 --namespace prometheus \
 --create-namespace \
---set persistentVolume.enabled=true
---set persistentVolume.storageClass="k8s-nfs-class"
+--set persistentVolume.enabled=true \
+--set server.persistentVolume.storageClass="k8s-nfs-class" \
+--set alertmanager.persistentVolume.storageClass="k8s-nfs-class"
 
 helm upgrade --install prometheus prometheus-community/prometheus --namespace prometheus --set persistentVolume.enabled=false -f 
 
@@ -61,15 +69,7 @@ helm upgrade --install prometheus prometheus-community/prometheus --namespace pr
 
 
 
- --set datasources."datasources.yaml".apiVersion=1  \
- --set datasources."datasources.yaml".datasources[0].type=prometheus \
- --set datasources."datasources.yaml".datasources[0].url=http://prometheus-server.prometheus.svc.cluster.local \
- --set datasources."datasources.yaml".datasources[0].access=proxy \
- --set datasources."datasources.yaml".datasources[0].isDefault=true 
-
-
-
-
+ 
 helm upgrade --install grafana grafana/grafana  \
 --namespace grafana  --create-namespace \
 --set adminPassword='We12come' \
@@ -78,8 +78,6 @@ helm upgrade --install grafana grafana/grafana  \
 --set persistence.size=2Gi \
 --set initChownData.enabled=false \
 --set service.type=LoadBalancer
-
-
 --set datasources.”datasources\.yaml”.apiVersion=1 \
 --set datasources.”datasources\.yaml”.datasources[0].name=Prometheus \
 --set datasources.”datasources\.yaml”.datasources[0].type=prometheus  \
@@ -107,6 +105,10 @@ helm install grafana grafana/grafana --namespace grafana --set adminPassword='We
 helm repo add bitnami https://charts.bitnami.com/bitnami
 kubectl create namespace kubeapps
 helm install kubeapps --namespace kubeapps bitnami/kubeapps --set useHelm3=true
+
+
+
+
 
 kubectl create serviceaccount kubeapps-operator
 kubectl create clusterrolebinding kubeapps-operator --clusterrole=cluster-admin --serviceaccount=default:kubeapps-operator
@@ -202,25 +204,18 @@ helm install spark-operator spark-operator/spark-operator \
 
 
 
-Get the Prometheus server URL by running these commands in the same shell:
-  export POD_NAME=$(kubectl get pods --namespace prometheus -l "app=prometheus,component=server" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace prometheus port-forward $POD_NAME 9090
-
-
-The Prometheus alertmanager can be accessed via port 80 on the following DNS name from within your cluster:
-prometheus-alertmanager.prometheus.svc.cluster.local
-
-
-Get the Alertmanager URL by running these commands in the same shell:
-  export POD_NAME=$(kubectl get pods --namespace prometheus -l "app=prometheus,component=alertmanager" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace prometheus port-forward $POD_NAME 9093
 
 
 
-The Prometheus PushGateway can be accessed via port 9091 on the following DNS name from within your cluster:
-prometheus-pushgateway.prometheus.svc.cluster.local
 
-
-Get the PushGateway URL by running these commands in the same shell:
-  export POD_NAME=$(kubectl get pods --namespace prometheus -l "app=prometheus,component=pushgateway" -o jsonpath="{.items[0].metadata.name}")
-  kubectl --namespace prometheus port-forward $POD_NAME 9091
+# Install Cilium wiht its helm chart
+helm repo add cilium https://helm.cilium.io/
+helm install cilium cilium/cilium \
+--version $CILIUM_VERSION \
+--namespace kube-system \
+--set kubeProxyReplacement=strict \
+--set k8sServiceHost=$MASTER_IP \
+--set k8sServicePort=6443   \
+--set hubble.listenAddress=":4244" \
+--set hubble.relay.enabled=true \
+--set hubble.ui.enabled=true  

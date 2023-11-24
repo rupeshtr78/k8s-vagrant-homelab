@@ -38,13 +38,11 @@ apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   name: orange-ingress
-  namespace: playground
   annotations:
-    ingress.kubernetes.io/rewrite-target: /$2
-    kubernetes.io/ingress.class: "nginx"
+    ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
-  - host: play.192.168.2.50.nip.io
   - http:
       paths:
         - path: /orange

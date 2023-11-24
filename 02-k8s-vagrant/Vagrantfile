@@ -11,20 +11,20 @@ Vagrant.configure("2") do |config|
       echo "$IP_NW$((IP_START+3)) worker-node03" >> /etc/hosts
   SHELL
 
-  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.box = "bento/ubuntu-22.04"
   config.vm.box_check_update = true
   config.vm.boot_timeout = 1200
 
   config.vm.define "master" do |master|
-    # master.vm.box = "bento/ubuntu-18.04"
     master.vm.hostname = "master-node"
-    master.vm.network "public_network", bridge: "QLogic BCM5709C Gigabit Ethernet (NDIS VBD Client) #2", ip: IP_NW + "#{IP_START}"
+    master.vm.network "public_network", bridge: "eno2", ip: IP_NW + "#{IP_START}"
     master.vm.provider "virtualbox" do |vb|
-        vb.memory = 6144
-        vb.cpus = 4
+        vb.memory = 16384
+        vb.cpus = 8
     end
     master.vm.provision "shell", path: "scripts/common.sh"
     master.vm.provision "shell", path: "scripts/master.sh"
+    master.vm.provision "shell", path: "scripts/helm.sh"
     if Vagrant.has_plugin?("vagrant-timezone")
        config.timezone.value = :host
     end
@@ -34,10 +34,10 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "node0#{i}" do |node|
     node.vm.hostname = "worker-node0#{i}"
-    node.vm.network "public_network", bridge: "QLogic BCM5709C Gigabit Ethernet (NDIS VBD Client) #2", ip: IP_NW + "#{IP_START + i}"
+    node.vm.network "public_network", bridge: "eno2", ip: IP_NW + "#{IP_START + i}"
     node.vm.provider "virtualbox" do |vb|
-        vb.memory = 6144
-        vb.cpus = 4
+        vb.memory = 8048
+        vb.cpus = 8
     end
     node.vm.provision "shell", path: "scripts/common.sh"
     node.vm.provision "shell", path: "scripts/node.sh"
@@ -47,4 +47,14 @@ Vagrant.configure("2") do |config|
   end
 
   end
+
+
 end 
+
+
+# master.vm.provider "virtualbox" do |vb|
+#   vb.memory = 6144
+#   vb.cpus = 4
+#   vb.customize ['createhd', '--filename', './disk.vdi', '--variant', 'Fixed', '--size', 10240] # 10 GB
+#   vb.customize ['storageattach', :id, '--storagectl', 'SATA Controller', '--port', 0, '--device', 0, '--type', 'hdd', '--medium', './disk.vdi']
+# end

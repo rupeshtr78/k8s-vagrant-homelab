@@ -6,17 +6,27 @@ set -euxo pipefail
 
 MASTER_IP="192.168.2.130"
 NODENAME=$(hostname -s)
-POD_CIDR="192.168.0.0/16"
+POD_CIDR="10.42.0.0/16"
+CILIUM_VERSION="1.14.4"
 
 sudo kubeadm config images pull
 
 echo "Preflight Check Passed: Downloaded All Required Images"
 
-sudo kubeadm init --apiserver-advertise-address=$MASTER_IP --apiserver-cert-extra-sans=$MASTER_IP --pod-network-cidr=$POD_CIDR --node-name "$NODENAME" --ignore-preflight-errors Swap
+# sudo kubeadm init --apiserver-advertise-address=$MASTER_IP \
+#   --apiserver-cert-extra-sans=$MASTER_IP \
+#   --pod-network-cidr=$POD_CIDR \
+#   --node-name "$NODENAME" \
+#   --ignore-preflight-errors Swap
+
+sudo kubeadm init --apiserver-advertise-address=$MASTER_IP --apiserver-cert-extra-sans=$MASTER_IP --pod-network-cidr=$POD_CIDR --node-name "$NODENAME" --ignore-preflight-errors Swap --skip-phases=addon/kube-proxy --control-plane-endpoint $MASTER_IP
 
 mkdir -p "$HOME"/.kube
 sudo cp -i /etc/kubernetes/admin.conf "$HOME"/.kube/config
 sudo chown "$(id -u)":"$(id -g)" "$HOME"/.kube/config
+
+# Install helm
+sudo snap install helm --classic
 
 # Save Configs to shared /Vagrant location
 
@@ -36,46 +46,20 @@ chmod +x /vagrant/configs/join.sh
 
 kubeadm token create --ttl 0 --print-join-command > /vagrant/configs/join.sh
 
-# Install Calico Network Plugin
+# Generete KUBECONFIG on the host
+sudo cp -f /etc/kubernetes/admin.conf /vagrant/configs/config
 
-curl https://docs.projectcalico.org/manifests/calico.yaml -O
+# # Install Calico Network Plugin
 
-kubectl apply -f calico.yaml
+# curl https://docs.projectcalico.org/manifests/calico.yaml -O
+
+# kubectl apply -f calico.yaml
+
 
 # Install Metrics Server
 
 kubectl apply -f https://raw.githubusercontent.com/scriptcamp/kubeadm-scripts/main/manifests/metrics-server.yaml
 
-# Install Kubernetes Dashboard
-
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.5.1/aio/deploy/recommended.yaml
-
-# Create Dashboard User
-
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-
-cat <<EOF | kubectl apply -f -
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: admin-user
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: cluster-admin
-subjects:
-- kind: ServiceAccount
-  name: admin-user
-  namespace: kubernetes-dashboard
-EOF
-
-kubectl -n kubernetes-dashboard get secret "$(kubectl -n kubernetes-dashboard get sa/admin-user -o jsonpath="{.secrets[0].name}")" -o go-template="{{.data.token | base64decode}}" >> /vagrant/configs/token
 
 sudo -i -u vagrant bash << EOF
 whoami

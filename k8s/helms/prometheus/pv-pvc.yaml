@@ -7,7 +7,7 @@ metadata:
     type: nfs
     app: prometheus-deployment
 spec:
-  storageClassName: hyper-nfs
+  storageClassName: k8s-nfs-class
   capacity:
     storage: 1Gi
   accessModes:
