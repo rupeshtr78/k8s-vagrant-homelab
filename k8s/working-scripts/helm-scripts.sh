@@ -69,21 +69,39 @@ helm upgrade --install prometheus prometheus-community/prometheus --namespace pr
 
 
 
- 
+helm repo add grafana https://grafana.github.io/helm-charts
 helm upgrade --install grafana grafana/grafana  \
 --namespace grafana  --create-namespace \
 --set adminPassword='We12come' \
 --set persistence.enabled=true  \
 --set persistence.storageClassName="k8s-nfs-class" \
---set persistence.size=2Gi \
+--set persistence.size=1Gi \
 --set initChownData.enabled=false \
---set service.type=LoadBalancer
+--set ingress.enabled=true \
+--set ingress.ingressClassName=cilium \
 --set datasources.”datasources\.yaml”.apiVersion=1 \
 --set datasources.”datasources\.yaml”.datasources[0].name=Prometheus \
 --set datasources.”datasources\.yaml”.datasources[0].type=prometheus  \
 --set datasources.”datasources\.yaml”.datasources[0].url=http://prometheus-server.prometheus.svc.cluster.local \
 --set datasources.”datasources\.yaml”.datasources[0].access=proxy \
 --set datasources.”datasources\.yaml”.datasources[0].isDefault=true 
+
+
+helm upgrade --install grafana grafana/grafana \
+--namespace grafana  --create-namespace \
+--set adminPassword='We12come' \
+--set persistence.enabled=true  \
+--set persistence.storageClassName="k8s-nfs-class" \
+--set persistence.size=1Gi \
+--set initChownData.enabled=false \
+--set ingress.enabled=true \
+--set ingress.ingressClassName=cilium \
+--set 'datasources."datasources\.yaml".apiVersion'=1 \
+--set 'datasources."datasources\.yaml".datasources[0].name'=Prometheus \
+--set 'datasources."datasources\.yaml".datasources[0].type'=prometheus  \
+--set 'datasources."datasources\.yaml".datasources[0].url'=http://prometheus-server.prometheus.svc.cluster.local \
+--set 'datasources."datasources\.yaml".datasources[0].access'=proxy \
+--set 'datasources."datasources\.yaml".datasources[0].isDefault'=true 
 
 
 helm install grafana grafana/grafana --namespace grafana --set adminPassword='We12come' --set persistence.enabled=true
