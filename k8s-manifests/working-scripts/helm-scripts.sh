@@ -220,13 +220,20 @@ helm install spark-operator spark-operator/spark-operator \
 --set webhook.enable=true
 
 
+helm repo add stakater https://stakater.github.io/stakater-charts
+
+helm repo update
+
+helm install konfigurator stakater/konfigurator \
+    --namespace konfigurator \
+    --create-namespace \
+   --set deployCRD=true 
 
 
 
 
 
-
-# Install Cilium wiht its helm chart
+# Install Cilium with its helm chart
 helm repo add cilium https://helm.cilium.io/
 helm install cilium cilium/cilium \
 --version $CILIUM_VERSION \

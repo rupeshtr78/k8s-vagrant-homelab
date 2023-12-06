@@ -1,0 +1,31 @@
+apiVersion: konfigurator.stakater.com/v1alpha1
+kind: Configuration
+metadata:
+  name: rtr-configuration
+  namespace: konfigurator
+spec:
+  storeTo:
+    name: rtr-konfig-cm
+    type: configmap
+
+  # Resources to observe to fill-in the blanks
+  references:
+    # Database Connection Strings
+    - kind: Secret
+      apiVersion: v1
+      name: rtr-rds
+      namespace: konfigurator
+      referenceName: db
+
+  # Render configuration template from observed resources
+  templateKeys:
+    - key: config.yaml
+      template: |
+        plainConfig:
+          dbStorageSOPS:
+            user: {{`{{ index (index .db 0).data "master_username" | b64dec }}`}}
+
+
+# echo -n 'myusername' > ./username.txt
+# kubectl create secret generic rtr-rds --from-file=master_username=./username.txt --namespace=konfigurator
+# rm ./username.txt
