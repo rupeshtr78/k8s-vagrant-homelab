@@ -244,3 +244,22 @@ helm install cilium cilium/cilium \
 --set hubble.listenAddress=":4244" \
 --set hubble.relay.enabled=true \
 --set hubble.ui.enabled=true  
+
+# Install Cert Manager
+kubectl apply --validate=false -f https://github.com/jetstack/cert-manager/releases/download/v1.12.0/cert-manager.yaml
+
+helm repo add jetstack https://charts.jetstack.io
+
+helm install \
+  cert-manager jetstack/cert-manager \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.12.7 \ # specify a suitable version
+  --set installCRDs=true
+
+kubectl create secret tls ca-key-pair \
+   --cert=server.crt \
+   --key=server.key \
+   --namespace=default
+
+

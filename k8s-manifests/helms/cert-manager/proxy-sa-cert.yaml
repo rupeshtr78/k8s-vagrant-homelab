@@ -1,0 +1,11 @@
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: proxy-sa-certificate
+  namespace: default
+spec:
+  secretName: proxy-sa-cert-secret
+  commonName: proxy-sa # Service account name
+  issuerRef:
+    name: p90s-ca-issuer
+    kind: ClusterIssuer
