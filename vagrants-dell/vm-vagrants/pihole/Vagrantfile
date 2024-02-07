@@ -1,0 +1,36 @@
+NUM_WORKER_NODES=1
+IP_NW="192.168.2."
+IP_START=180
+
+Vagrant.configure("2") do |config|
+  config.vm.provision "shell", env: {"IP_NW" => IP_NW, "IP_START" => IP_START}, inline: <<-SHELL
+      apt-get update -y
+      echo "$IP_NW$((IP_START)) pihole" >> /etc/hosts
+  SHELL
+
+  config.vm.box = "bento/ubuntu-20.04"
+  config.vm.box_check_update = true
+  config.vm.boot_timeout = 1200
+
+  (1..NUM_WORKER_NODES).each do |i|
+
+    config.vm.define "pihole" do |pihole|
+      # master.vm.box = "bento/ubuntu-18.04"
+      pihole.vm.hostname = "pihole"
+      pihole.vm.network "public_network", bridge: "QLogic BCM5709C Gigabit Ethernet (NDIS VBD Client) #2", ip: IP_NW + "#{IP_START + i}"
+      pihole.vm.provider "virtualbox" do |vb|
+          vb.memory = 2048
+          vb.cpus = 2
+      end
+      pihole.vm.provision "shell", path: "scripts/pihole.sh"
+      if Vagrant.has_plugin?("vagrant-timezone")
+         config.timezone.value = :host
+      end
+    end
+
+  end
+
+end
+
+#  sudo su -
+#  vagrant/vagrant

@@ -1,0 +1,32 @@
+NUM_WORKER_NODES=1
+IP_NW="192.168.1."
+IP_START=136
+
+Vagrant.configure("2") do |config|
+  config.vm.provision "shell", env: {"IP_NW" => IP_NW, "IP_START" => IP_START}, inline: <<-SHELL
+      apt-get update -y
+      echo "$IP_NW$((IP_START)) spin-node" >> /etc/hosts
+  SHELL
+
+  config.vm.box = "bento/ubuntu-21.10"
+  config.vm.box_check_update = true
+  config.vm.boot_timeout = 1200
+
+  config.vm.define "spin" do |spin|
+    # master.vm.box = "bento/ubuntu-18.04"
+    spin.vm.hostname = "spin-node"
+    spin.vm.network "public_network", bridge: "Intel(R) 82579LM Gigabit Network Connection", ip: IP_NW + "#{IP_START}"
+    spin.vm.provider "virtualbox" do |vb|
+        vb.memory = 2048
+        vb.cpus = 4
+    end
+    spin.vm.provision "shell", path: "scripts/spin.sh"
+    if Vagrant.has_plugin?("vagrant-timezone")
+       config.timezone.value = :host
+    end
+  end
+
+end 
+
+#  sudo su -
+#  vagrant/vagrant

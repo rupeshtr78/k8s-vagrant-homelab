@@ -1,0 +1,19 @@
+[Unit]
+Description=Keycloak Authorization Server
+After=network.target
+
+[Service]
+User=keycloak
+Group=keycloak
+ExecStart=/opt/keycloak/bin/kc.sh start
+ExecStop=/opt/keycloak/bin/kc.sh stop
+Restart=always
+RestartSec=3
+Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+Environment="DB_VENDOR=postgres"
+Environment="DB_ADDR=127.0.0.1"
+Environment="DB_DATABASE=keycloak"
+Environment="DB_USER=keycloak"
+Environment="DB_PASSWORD=admin"
+[Install]
+WantedBy=multi-user.target
