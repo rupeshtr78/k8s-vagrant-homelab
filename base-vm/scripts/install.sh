@@ -47,5 +47,9 @@ sudo apt-get install -y openssl
 # Install vifm
 sudo apt-get install -y vifm
 
+# Install vim plugged
+curl -fLo ~/.vim/autoload/plug.vim --create-dirs \
+    https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+
 echo -e "\e[1;35m Vagrant up completed Succesfully \e[0m"
 
